@@ -1,0 +1,17 @@
+{
+  "name": "aravindhan-changes---18_june_2026",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "cd Minus_Magic_Glass_v3-main && npm run dev",
+    "build": "cd Minus_Magic_Glass_v3-main && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  }
+}
