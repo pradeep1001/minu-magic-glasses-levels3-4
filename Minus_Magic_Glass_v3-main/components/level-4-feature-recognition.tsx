@@ -6,6 +6,7 @@ import { ArrowLeft, Zap, CheckCircle2, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MinuAvatar } from "@/components/minu-avatar"
 import { LevelQuiz } from "@/components/level-quiz"
+import { LevelHub, LevelWatch } from "@/components/level-hub"
 import { Starfield } from "@/components/starfield"
 import { playClick, playFanfare, playError } from "@/lib/audio"
 import type { LevelActivityProps, QuizQuestion } from "@/lib/level-data"
@@ -70,7 +71,7 @@ const ROUNDS = [
     id: "round3",
     image: "/images/level4/Dolphin.png",
     label: "Real Dolphin vs Plushy Dolphin",
-    correct: "Shape" as Option,
+    correct: "Texture" as Option,
   },
   {
     id: "round4",
@@ -86,12 +87,13 @@ const ROUNDS = [
   },
 ]
 
-type Phase = "activity" | "quiz"
+type Phase = "hub" | "watch" | "activity" | "quiz"
 
 // ─── Component ────────────────────────────────────────────────
 
 export default function Level4FeatureRecognition({ onComplete, onBack }: LevelActivityProps) {
-  const [phase, setPhase] = useState<Phase>("activity")
+  const [phase, setPhase] = useState<Phase>("hub")
+  const [playDone, setPlayDone] = useState(false)
   const [quizKey, setQuizKey] = useState(0)
   const [roundIndex, setRoundIndex] = useState(0)
   const [selected, setSelected] = useState<Option | null>(null)
@@ -123,6 +125,7 @@ export default function Level4FeatureRecognition({ onComplete, onBack }: LevelAc
           setMinuPose("pointing")
           setStatusText("Look at the two figures carefully. How are they different?")
         } else {
+          setPlayDone(true)
           setPhase("quiz")
         }
       }, 1400)
@@ -142,6 +145,34 @@ export default function Level4FeatureRecognition({ onComplete, onBack }: LevelAc
     }
   }
 
+  // ── Hub Phase (Watch / Play / Quiz landing) ────────────────────
+  if (phase === "hub") {
+    return (
+      <LevelHub
+        levelLabel="Level 4"
+        title="Feature Recognition"
+        subtitle="Spot shapes and regions so Minu knows what's what."
+        quizUnlocked={playDone}
+        onWatch={() => setPhase("watch")}
+        onPlay={() => setPhase("activity")}
+        onQuiz={() => setPhase("quiz")}
+        onBack={onBack}
+      />
+    )
+  }
+
+  // ── Watch Phase (video placeholder → Play) ─────────────────────
+  if (phase === "watch") {
+    return (
+      <LevelWatch
+        levelLabel="Level 4"
+        title="Feature Recognition"
+        onNext={() => setPhase("activity")}
+        onBack={() => setPhase("hub")}
+      />
+    )
+  }
+
   // ── Quiz Phase ─────────────────────────────────────────────────
   if (phase === "quiz") {
     return (
@@ -156,8 +187,8 @@ export default function Level4FeatureRecognition({ onComplete, onBack }: LevelAc
             size="icon"
             variant="secondary"
             className="size-10 shrink-0 rounded-full border border-primary/25"
-            aria-label="Back to map"
-            onClick={() => { playClick(); onBack() }}
+            aria-label="Back to menu"
+            onClick={() => { playClick(); setPhase("hub") }}
           >
             <ArrowLeft className="size-5" />
           </Button>
@@ -179,7 +210,7 @@ export default function Level4FeatureRecognition({ onComplete, onBack }: LevelAc
             retryOnlyOnFail
             compact
             onComplete={() => { playFanfare(); onComplete() }}
-            onBack={onBack}
+            onBack={() => setPhase("hub")}
             onFail={() => { playClick(); setQuizKey((k) => k + 1) }}
           />
         </div>
@@ -202,8 +233,8 @@ export default function Level4FeatureRecognition({ onComplete, onBack }: LevelAc
           size="icon"
           variant="secondary"
           className="size-9 shrink-0 rounded-full border border-primary/25 sm:size-10"
-          aria-label="Back to map"
-          onClick={() => { playClick(); onBack() }}
+          aria-label="Back to menu"
+          onClick={() => { playClick(); setPhase("hub") }}
         >
           <ArrowLeft className="size-5" />
         </Button>

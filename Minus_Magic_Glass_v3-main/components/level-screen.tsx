@@ -23,6 +23,8 @@ type LevelScreenProps = {
 }
 
 // Lazy-load level modules (only imported when that level is active)
+const Level1 = lazy(() => import("@/components/level-1-pixels"))
+const Level2 = lazy(() => import("@/components/level-2-colors"))
 const Level3 = lazy(() => import("@/components/level-3-edge-detection"))
 const Level4 = lazy(() => import("@/components/level-4-feature-recognition"))
 const Level5 = lazy(() => import("@/components/level-5-image-classification"))
@@ -36,6 +38,24 @@ export function LevelScreen({ level, onBack, onComplete }: LevelScreenProps) {
     if (introFile) playNarratorFile(introFile)
     return () => stopNarrator()
   }, [level.id])
+
+  // Level 1: Pixel to Colors
+  if (level.id === 1) {
+    return (
+      <Suspense fallback={<PlaceholderLevel level={level} onBack={onBack} onComplete={onComplete} />}>
+        <Level1 onComplete={() => onComplete(level.id)} onBack={onBack} />
+      </Suspense>
+    )
+  }
+
+  // Level 2: Color Potion Time
+  if (level.id === 2) {
+    return (
+      <Suspense fallback={<PlaceholderLevel level={level} onBack={onBack} onComplete={onComplete} />}>
+        <Level2 onComplete={() => onComplete(level.id)} onBack={onBack} />
+      </Suspense>
+    )
+  }
 
   // Level 3: Edge Detection — tracing activity
   if (level.id === 3) {

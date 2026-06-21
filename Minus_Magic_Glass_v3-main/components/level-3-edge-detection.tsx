@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { ArrowLeft, Zap, CheckCircle2, RotateCcw, Lightbulb, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MinuAvatar } from "@/components/minu-avatar"
+import { LevelHub, LevelWatch } from "@/components/level-hub"
 import { Starfield } from "@/components/starfield"
 import { playClick, playFanfare, playError } from "@/lib/audio"
 import type { LevelActivityProps } from "@/lib/level-data"
@@ -67,9 +68,9 @@ const ROUNDS = [
     id: "circle",
     label: "Circle",
     title: "Round 1 – Circle",
-    instruction: "Move your finger over the dots to trace the circle's edge!",
-    hint: "Start at the top and slowly move around in a circle to light up all the dots.",
-    doneText: "Amazing! You found the circle's edge!",
+    instruction: "Imagine a circle in the grid. Color the cells along its round edge!",
+    hint: "Picture a big circle filling the grid, then click the cells that sit on its curved border. Leave the middle and corners blank.",
+    doneText: "Amazing! You found the circle's edge cells!",
     color: "#a78bfa",
     dots: CIRCLE_DOTS,
   },
@@ -77,8 +78,8 @@ const ROUNDS = [
     id: "square",
     label: "Square",
     title: "Round 2 – Square",
-    instruction: "Trace over the dots to reveal all four edges of the square!",
-    hint: "Follow each side of the square — top, right, bottom, then left.",
+    instruction: "Trace a square. Color the cells along all four straight edges!",
+    hint: "A square has a flat top, bottom, left and right. Click the cells that form those four straight sides, and leave the inside empty.",
     doneText: "Brilliant! The square's edges are revealed!",
     color: "#34d399",
     dots: SQUARE_DOTS,
@@ -87,8 +88,8 @@ const ROUNDS = [
     id: "rhombus",
     label: "Rhombus",
     title: "Round 3 – Rhombus",
-    instruction: "Follow the dots to trace the diamond (rhombus) shape!",
-    hint: "Start at the top point and trace each diagonal side of the diamond.",
+    instruction: "Trace a diamond. Color the cells along its four slanted edges!",
+    hint: "Start at the top point and follow each slanted side down to the side points and the bottom point — like a diamond.",
     doneText: "Incredible! You've mastered edge detection!",
     color: "#f59e0b",
     dots: RHOMBUS_DOTS,
@@ -104,8 +105,8 @@ const QUIZ_QUESTIONS = [
     correct: 0,
   },
   {
-    question: "Where do edges appear in an image?",
-    options: ["Where colors change quickly", "In the very center", "Only at corners", "Everywhere equally"],
+    question: "A computer sees a picture as a grid of cells. What are edges made of?",
+    options: ["Cells along the border of a shape", "Cells in the very center", "The empty cells only", "Every cell equally"],
     correct: 0,
   },
   {
@@ -130,12 +131,14 @@ function distToSegment(
   const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq))
   return Math.sqrt((px - (ax + t * dx)) ** 2 + (py - (ay + t * dy)) ** 2)
 }
-type Phase = "activity" | "quiz"
+
+type Phase = "hub" | "watch" | "activity" | "quiz"
 
 // ─── Component ────────────────────────────────────────────────
 
 export default function Level3EdgeDetection({ onComplete, onBack }: LevelActivityProps) {
-  const [phase, setPhase] = useState<Phase>("activity")
+  const [phase, setPhase] = useState<Phase>("hub")
+  const [playDone, setPlayDone] = useState(false)
 
   // Activity state
   const [roundIndex, setRoundIndex] = useState(0)
@@ -220,6 +223,7 @@ export default function Level3EdgeDetection({ onComplete, onBack }: LevelActivit
       setStatusText(ROUNDS[next].instruction)
       setHintVisible(false)
     } else {
+      setPlayDone(true)
       setPhase("quiz")
     }
   }
@@ -268,6 +272,35 @@ export default function Level3EdgeDetection({ onComplete, onBack }: LevelActivit
     setQuizDone(false)
   }
 
+  // ── Hub Phase (Watch / Play / Quiz landing) ────────────────────
+  if (phase === "hub") {
+    return (
+      <LevelHub
+        levelLabel="Level 3"
+        title="Edge Detection"
+        subtitle="Help Minu find the outlines hiding in a picture."
+        quizUnlocked={playDone}
+        onWatch={() => setPhase("watch")}
+        onPlay={() => setPhase("activity")}
+        onQuiz={() => setPhase("quiz")}
+        onBack={onBack}
+      />
+    )
+  }
+
+  // ── Watch Phase (video placeholder → Play) ─────────────────────
+  if (phase === "watch") {
+    return (
+      <LevelWatch
+        levelLabel="Level 3"
+        title="Edge Detection"
+        videoSrc="https://drive.google.com/file/d/1uVuvy6kaT7F7Qc3T0j-lbreHT95j6bj1/preview"
+        onNext={() => setPhase("activity")}
+        onBack={() => setPhase("hub")}
+      />
+    )
+  }
+
   // ── Quiz Phase ─────────────────────────────────────────────────
   if (phase === "quiz") {
     const q = QUIZ_QUESTIONS[quizIndex]
@@ -284,8 +317,8 @@ export default function Level3EdgeDetection({ onComplete, onBack }: LevelActivit
             size="icon"
             variant="secondary"
             className="size-10 shrink-0 rounded-full border border-primary/25"
-            aria-label="Back to map"
-            onClick={() => { playClick(); onBack() }}
+            aria-label="Back to menu"
+            onClick={() => { playClick(); setPhase("hub") }}
           >
             <ArrowLeft className="size-5" />
           </Button>
@@ -364,7 +397,7 @@ export default function Level3EdgeDetection({ onComplete, onBack }: LevelActivit
                   <Button
                     variant="outline"
                     size="lg"
-                    onClick={() => { playClick(); onBack() }}
+                    onClick={() => { playClick(); setPhase("hub") }}
                     className="font-heading rounded-full px-6 font-extrabold"
                   >
                     <ArrowLeft className="size-4" /> Back
@@ -393,8 +426,8 @@ export default function Level3EdgeDetection({ onComplete, onBack }: LevelActivit
           size="icon"
           variant="secondary"
           className="size-9 shrink-0 rounded-full border border-primary/25 sm:size-10"
-          aria-label="Back to map"
-          onClick={() => { playClick(); onBack() }}
+          aria-label="Back to menu"
+          onClick={() => { playClick(); setPhase("hub") }}
         >
           <ArrowLeft className="size-5" />
         </Button>
