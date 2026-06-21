@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "cd Minus_Magic_Glass_v3-main && npm run dev",
-    "build": "cd Minus_Magic_Glass_v3-main && npm run build"
+    "build": "cd Minus_Magic_Glass_v3-main && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
